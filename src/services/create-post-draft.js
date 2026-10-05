@@ -1,6 +1,6 @@
-import { nanoid } from 'nanoid';
-import { generatePostFromIdea } from '../agents/post-writer.js';
-import { pool } from '../db/pool.js';
+import { nanoid } from "nanoid";
+import { generatePostFromIdea } from "../agents/post-writer.js";
+import { pool } from "../db/pool.js";
 
 export async function createPostDraft(idea) {
   const { title, content } = await generatePostFromIdea(idea);
