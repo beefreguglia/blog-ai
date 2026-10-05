@@ -1,5 +1,6 @@
 import { createServer } from "node:http";
 import { createPostDraft } from "./services/create-post-draft.js";
+import { getPost } from "./services/get-post.js";
 import { listPosts } from "./services/list-posts.js";
 
 const { API_HOST, API_PORT, API_PROTOCOL } = process.env;
@@ -13,13 +14,11 @@ const readJsonBody = async (req) => {
 // Req = Request (Requisição)
 // Res = Response (Resposta)
 const server = createServer(async (req, res) => {
-  const { method, url } = req;
+  const { method } = req;
+  const { pathname } = new URL(req.url, "http://localhost");
   const headers = { "Content-Type": "application/json; charset=utf-8" };
 
-  const paths = url.split("/").filter(Boolean);
-  const path = paths.at(0) || "/";
-
-  if (method === "GET" && path === "posts") {
+  if (method === "GET" && /^\/posts\/?$/.test(pathname)) {
     try {
       const posts = await listPosts();
 
@@ -32,7 +31,27 @@ const server = createServer(async (req, res) => {
     }
   }
 
-  if (method === "POST" && path === "posts" && paths.at(1) === "draft") {
+  const postMatch = pathname.match(/^\/posts\/(?<id>[^/]+)\/?$/);
+
+  if (method === "GET" && postMatch) {
+    try {
+      const post = await getPost(postMatch.groups.id);
+
+      if (!post) {
+        res.writeHead(404, headers);
+        return res.end(JSON.stringify({ message: "Post não encontrado" }));
+      }
+
+      res.writeHead(200, headers);
+      return res.end(JSON.stringify(post));
+    } catch (error) {
+      console.error(error);
+      res.writeHead(500, headers);
+      return res.end(JSON.stringify({ message: "Erro ao buscar post" }));
+    }
+  }
+
+  if (method === "POST" && /^\/posts\/draft\/?$/.test(pathname)) {
     try {
       const body = await readJsonBody(req);
 
