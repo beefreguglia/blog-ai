@@ -3,8 +3,12 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "node --env-file=.env.local --watch src/index.js",
+    "db:migrate": "node --env-file=.env.local node_modules/postgrator-cli/index.js",
+    "db:migrate:undo": "node --env-file=.env.local node_modules/postgrator-cli/index.js 0",
+    "infra:up": "docker compose up -d --wait",
+    "infra:down": "docker compose down",
     "env:setup": "cp .env.example .env.local",
-    "local:setup": "npm run env:setup"
+    "local:setup": "pnpm run env:setup && pnpm run infra:up && npm run db:migrate"
   },
   "license": "ISC",
   "type": "module",
@@ -12,6 +16,10 @@
     "@ai-sdk/openai": "^4.0.83",
     "@mastra/core": "^1.74.0",
     "nanoid": "^6.0.1",
+    "pg": "^8.23.1",
     "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "postgrator-cli": "^10.0.0"
   }
 }

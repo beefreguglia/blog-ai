@@ -1,13 +1,9 @@
 import { createServer } from 'node:http';
-import { nanoid } from 'nanoid';
-import { generatePostFromIdea } from './agents/post-writer.js';
+import { createPostDraft } from './services/create-post-draft.js';
+import { listPosts } from './services/list-posts.js';
 
 const { API_HOST, API_PORT, API_PROTOCOL } = process.env
 
-
-const posts = [];
-
-const draftPosts = [];
 
 const readJsonBody = async (req) => {
   const chunks = [];
@@ -25,8 +21,16 @@ const server = createServer(async (req, res) => {
   const path = paths.at(0) || '/';
 
   if (method === 'GET' && path === 'posts') {
-    res.writeHead(200, headers);
-    return res.end(JSON.stringify(posts));
+    try {
+      const posts = await listPosts();
+
+      res.writeHead(200, headers);
+      return res.end(JSON.stringify(posts));
+    } catch (error) {
+      console.error(error);
+      res.writeHead(500, headers);
+      return res.end(JSON.stringify({ message: 'Erro ao listar posts' }));
+    }
   }
 
   if (method === 'POST' && path === 'posts' && paths.at(1) === 'draft') {
@@ -38,19 +42,7 @@ const server = createServer(async (req, res) => {
         return res.end(JSON.stringify({ message: 'O campo idea é obrigatório' }));
       }
 
-      const { title, content } = await generatePostFromIdea(body.idea);
-
-      const draftPost = {
-        id: nanoid(),
-        title,
-        content,
-        published_at: null,
-        approved_at: null,
-        rejected_at: null,
-        created_at: new Date().toISOString(),
-      };
-
-      draftPosts.push(draftPost);
+      const draftPost = await createPostDraft(body.idea);
 
       res.writeHead(201, headers);
       return res.end(JSON.stringify(draftPost));
