@@ -33,7 +33,13 @@ export function postsRoutes(app) {
   });
 
   app.patch("/posts/:id/approve", async (req, res) => {
-    const approvedPost = await approvePost(req.params.id);
+    const { published_at: publishedAt } = req.body;
+
+    if (publishedAt !== undefined && Number.isNaN(Date.parse(publishedAt))) {
+      return res.status(400).json({ message: "O campo published_at deve ser uma data válida" });
+    }
+
+    const approvedPost = await approvePost(req.params.id, publishedAt);
 
     if (approvedPost) {
       return res.json(approvedPost);
