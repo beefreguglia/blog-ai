@@ -1,6 +1,8 @@
 {
   "name": "blog-ia-nodejs",
   "version": "1.0.0",
+  "license": "ISC",
+  "type": "module",
   "scripts": {
     "dev": "node --env-file=.env.local --watch src/index.js",
     "db:migrate": "node --env-file=.env.local node_modules/postgrator-cli/index.js",
@@ -8,10 +10,13 @@
     "infra:up": "docker compose up -d --wait",
     "infra:down": "docker compose down",
     "env:setup": "cp .env.example .env.local",
-    "local:setup": "pnpm run env:setup && pnpm run infra:up && npm run db:migrate"
+    "local:setup": "pnpm run env:setup && pnpm run infra:up && npm run db:migrate",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "prepare": "lefthook install"
   },
-  "license": "ISC",
-  "type": "module",
   "dependencies": {
     "@ai-sdk/openai": "^4.0.83",
     "@mastra/core": "^1.74.0",
@@ -20,6 +25,15 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@commitlint/cli": "^21.2.3",
+    "@commitlint/config-conventional": "^21.2.3",
+    "lefthook": "^2.1.16",
+    "lint-staged": "^17.6.0",
+    "oxfmt": "^0.71.0",
+    "oxlint": "^1.86.0",
     "postgrator-cli": "^10.0.0"
+  },
+  "engines": {
+    "node": ">=24"
   }
 }
