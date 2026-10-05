@@ -1,3 +1,4 @@
+import { approvePost } from "../services/approve-post.js";
 import { createPostDraft } from "../services/create-post-draft.js";
 import { getPost } from "../services/get-post.js";
 import { listPosts } from "../services/list-posts.js";
@@ -29,5 +30,21 @@ export function postsRoutes(app) {
     const draftPost = await createPostDraft(idea);
 
     res.status(201).json(draftPost);
+  });
+
+  app.patch("/posts/:id/approve", async (req, res) => {
+    const approvedPost = await approvePost(req.params.id);
+
+    if (approvedPost) {
+      return res.json(approvedPost);
+    }
+
+    const post = await getPost(req.params.id);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post não encontrado" });
+    }
+
+    res.status(409).json({ message: "Post já foi aprovado ou rejeitado" });
   });
 }
