@@ -2,6 +2,7 @@ import { approvePost } from "../services/approve-post.js";
 import { createPostDraft } from "../services/create-post-draft.js";
 import { getPost } from "../services/get-post.js";
 import { listPosts } from "../services/list-posts.js";
+import { rejectPost } from "../services/reject-post.js";
 
 export function postsRoutes(app) {
   app.get("/posts", async (req, res) => {
@@ -43,6 +44,22 @@ export function postsRoutes(app) {
 
     if (approvedPost) {
       return res.json(approvedPost);
+    }
+
+    const post = await getPost(req.params.id);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post não encontrado" });
+    }
+
+    res.status(409).json({ message: "Post já foi aprovado ou rejeitado" });
+  });
+
+  app.delete("/posts/:id/reject", async (req, res) => {
+    const rejectedPost = await rejectPost(req.params.id);
+
+    if (rejectedPost) {
+      return res.json(rejectedPost);
     }
 
     const post = await getPost(req.params.id);
