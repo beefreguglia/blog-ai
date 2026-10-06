@@ -86,6 +86,7 @@ export function createApp() {
   });
 
   return {
+    server,
     get: (path, handler) => route("GET", path, handler),
     post: (path, handler) => route("POST", path, handler),
     put: (path, handler) => route("PUT", path, handler),

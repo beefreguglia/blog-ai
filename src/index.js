@@ -1,11 +1,8 @@
-import { createApp } from "./lib/app.js";
-import { postsRoutes } from "./routes/posts.js";
+import { buildApp } from "./build-app.js";
 
 const { API_HOST, API_PORT, API_PROTOCOL } = process.env;
 
-const app = createApp();
-
-postsRoutes(app);
+const app = buildApp();
 
 app.listen(API_PORT, API_HOST, () => {
   console.log(`Servidor rodando em ${API_PROTOCOL}://${API_HOST}:${API_PORT}`);
