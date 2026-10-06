@@ -233,6 +233,24 @@ describe("E2E: API de posts", () => {
     });
   });
 
+  describe("documentação", () => {
+    it("serve a especificação OpenAPI em /openapi.json", async () => {
+      const res = await request(server).get("/openapi.json").expect(200);
+
+      assert.match(res.headers["content-type"], /application\/json/);
+      assert.match(res.body.openapi, /^3\./);
+      assert.ok(res.body.paths["/posts"]);
+    });
+
+    it("serve o Swagger UI em /docs", async () => {
+      const res = await request(server).get("/docs").expect(200);
+
+      assert.match(res.headers["content-type"], /text\/html/);
+      assert.match(res.text, /SwaggerUIBundle/);
+      assert.match(res.text, /\/openapi\.json/);
+    });
+  });
+
   describe("rotas inexistentes", () => {
     it("responde 404", async () => {
       const res = await request(server).get("/nao-existe").expect(404);
