@@ -1,3 +1,4 @@
+import { hasValidApiKey } from "../lib/api-key.js";
 import { approvePost } from "../services/approve-post.js";
 import { createPostDraft } from "../services/create-post-draft.js";
 import { getPost } from "../services/get-post.js";
@@ -6,7 +7,13 @@ import { rejectPost } from "../services/reject-post.js";
 
 export function postsRoutes(app) {
   app.get("/posts", async (req, res) => {
-    const posts = await listPosts();
+    const includeAll = req.query.include === "all";
+
+    if (includeAll && !hasValidApiKey(req)) {
+      return res.status(403).json({ message: "API key ausente ou inválida" });
+    }
+
+    const posts = await listPosts({ includeAll });
 
     res.json(posts);
   });
