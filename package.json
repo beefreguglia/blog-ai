@@ -8,6 +8,10 @@
     "db:migrate": "node --env-file=.env.local node_modules/postgrator-cli/index.js",
     "db:migrate:undo": "node --env-file=.env.local node_modules/postgrator-cli/index.js 0",
     "build": "docker build -t blog-ia-nodejs:latest .",
+    "test": "node --import ./tests/helpers/setup.js --test --test-concurrency=1 \"tests/**/*.test.js\"",
+    "test:unit": "node --import ./tests/helpers/setup.js --test --test-concurrency=1 \"tests/unit/**/*.test.js\"",
+    "test:integration": "node --import ./tests/helpers/setup.js --test --test-concurrency=1 \"tests/integration/**/*.test.js\"",
+    "test:e2e": "node --import ./tests/helpers/setup.js --test --test-concurrency=1 \"tests/e2e/**/*.test.js\"",
     "infra:up": "docker compose up -d --wait",
     "infra:down": "docker compose down",
     "env:setup": "cp .env.example .env.local",
@@ -32,7 +36,8 @@
     "lint-staged": "^17.6.0",
     "oxfmt": "^0.71.0",
     "oxlint": "^1.86.0",
-    "postgrator-cli": "^10.0.0"
+    "postgrator-cli": "^10.0.0",
+    "supertest": "^7.3.1"
   },
   "engines": {
     "node": ">=24"
