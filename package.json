@@ -7,6 +7,7 @@
     "dev": "node --env-file=.env.local --watch src/index.js",
     "db:migrate": "node --env-file=.env.local node_modules/postgrator-cli/index.js",
     "db:migrate:undo": "node --env-file=.env.local node_modules/postgrator-cli/index.js 0",
+    "build": "docker build -t blog-ia-nodejs:latest .",
     "infra:up": "docker compose up -d --wait",
     "infra:down": "docker compose down",
     "env:setup": "cp .env.example .env.local",

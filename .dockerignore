@@ -1,0 +1,12 @@
+node_modules
+.git
+.env*
+!.env.example
+Dockerfile
+.dockerignore
+docker-compose.yml
+.lintstagedrc.json
+.oxfmtrc.json
+.oxlintrc.json
+lefthook.yml
+commitlint.config.js
