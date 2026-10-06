@@ -41,6 +41,10 @@ export function postsRoutes(app) {
   });
 
   app.patch("/posts/:id/approve", async (req, res) => {
+    if (!hasValidApiKey(req)) {
+      return res.status(403).json({ message: "API key ausente ou inválida" });
+    }
+
     const { published_at: publishedAt } = req.body;
 
     if (publishedAt !== undefined && Number.isNaN(Date.parse(publishedAt))) {
@@ -63,6 +67,10 @@ export function postsRoutes(app) {
   });
 
   app.delete("/posts/:id/reject", async (req, res) => {
+    if (!hasValidApiKey(req)) {
+      return res.status(403).json({ message: "API key ausente ou inválida" });
+    }
+
     const rejectedPost = await rejectPost(req.params.id);
 
     if (rejectedPost) {
