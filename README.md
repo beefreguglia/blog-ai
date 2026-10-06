@@ -9,6 +9,7 @@ API de blog em Node.js que gera rascunhos de posts com IA. A partir de uma ideia
 - [Variáveis de ambiente](#variáveis-de-ambiente)
 - [Setup local](#setup-local)
 - [Scripts](#scripts)
+- [Testes](#testes)
 - [Endpoints](#endpoints)
 - [Modelo de dados](#modelo-de-dados)
 - [Build da imagem Docker](#build-da-imagem-docker)
@@ -28,7 +29,8 @@ API de blog em Node.js que gera rascunhos de posts com IA. A partir de uma ideia
 
 ```
 src/
-├── index.js                # entrypoint: cria o app, registra rotas e sobe o servidor
+├── index.js                # entrypoint: sobe o servidor
+├── build-app.js            # monta o app e registra as rotas (usado também nos testes)
 ├── agents/
 │   └── post-writer.js      # agente que gera título e conteúdo a partir de uma ideia
 ├── db/
@@ -45,6 +47,11 @@ src/
     ├── get-post.js
     ├── list-posts.js
     └── reject-post.js
+tests/
+├── helpers/                # setup de ambiente, banco de testes e mock do agente
+├── unit/
+├── integration/
+└── e2e/
 ```
 
 ## Variáveis de ambiente
@@ -87,18 +94,42 @@ Para derrubar a infraestrutura local: `pnpm run infra:down`.
 
 ## Scripts
 
-| Script                             | O que faz                                            |
-| ---------------------------------- | ---------------------------------------------------- |
-| `pnpm run dev`                     | Sobe a API com `--watch`, lendo `.env.local`         |
-| `pnpm run build`                   | Gera a imagem Docker `blog-ia-nodejs:latest`         |
-| `pnpm run db:migrate`              | Aplica as migrations pendentes                       |
-| `pnpm run db:migrate:undo`         | Desfaz todas as migrations (migra para a versão `0`) |
-| `pnpm run infra:up`                | Sobe o PostgreSQL local e aguarda ficar saudável     |
-| `pnpm run infra:down`              | Derruba a infraestrutura local                       |
-| `pnpm run env:setup`               | Copia `.env.example` para `.env.local`               |
-| `pnpm run local:setup`             | Setup completo do ambiente local                     |
-| `pnpm run lint` / `lint:fix`       | Executa o oxlint (com ou sem correção automática)    |
-| `pnpm run format` / `format:check` | Formata ou verifica a formatação com o oxfmt         |
+| Script                                                 | O que faz                                            |
+| ------------------------------------------------------ | ---------------------------------------------------- |
+| `pnpm run dev`                                         | Sobe a API com `--watch`, lendo `.env.local`         |
+| `pnpm run build`                                       | Gera a imagem Docker `blog-ia-nodejs:latest`         |
+| `pnpm test`                                            | Roda todos os testes (unitários, integração e E2E)   |
+| `pnpm run test:unit` / `test:integration` / `test:e2e` | Roda cada tipo de teste isoladamente                 |
+| `pnpm run db:migrate`                                  | Aplica as migrations pendentes                       |
+| `pnpm run db:migrate:undo`                             | Desfaz todas as migrations (migra para a versão `0`) |
+| `pnpm run infra:up`                                    | Sobe o PostgreSQL local e aguarda ficar saudável     |
+| `pnpm run infra:down`                                  | Derruba a infraestrutura local                       |
+| `pnpm run env:setup`                                   | Copia `.env.example` para `.env.local`               |
+| `pnpm run local:setup`                                 | Setup completo do ambiente local                     |
+| `pnpm run lint` / `lint:fix`                           | Executa o oxlint (com ou sem correção automática)    |
+| `pnpm run format` / `format:check`                     | Formata ou verifica a formatação com o oxfmt         |
+
+## Testes
+
+Os testes usam o test runner nativo do Node (`node --test`) e o **supertest** para o E2E. Ficam em `tests/`:
+
+| Tipo       | Pasta               | O que cobre                                                                     | Precisa de banco |
+| ---------- | ------------------- | ------------------------------------------------------------------------------- | :--------------: |
+| Unitário   | `tests/unit`        | `hasValidApiKey`, roteador (`createApp`) e services com o `pool` mockado        |       não        |
+| Integração | `tests/integration` | Services contra um PostgreSQL real (regras de aprovação, rejeição, listagem)    |       sim        |
+| E2E        | `tests/e2e`         | A API inteira via HTTP com supertest, incluindo autenticação e fluxos completos |       sim        |
+
+```bash
+pnpm run infra:up        # PostgreSQL local (necessário para integração e E2E)
+pnpm test                # todos os testes
+pnpm run test:unit
+pnpm run test:integration
+pnpm run test:e2e
+```
+
+- Os testes **nunca usam o banco de desenvolvimento**: `tests/helpers/setup.js` força `DATABASE_URL` para `postgresql://blog:blog@localhost:5433/blog_test` (ajustável com `TEST_DATABASE_URL`). O banco `blog_test` e a tabela são criados automaticamente na primeira execução.
+- A chamada à OpenAI é sempre mockada (`tests/helpers/agent.js`): os testes não consomem créditos nem precisam de `OPENAI_API_KEY` real.
+- Os arquivos rodam em série (`--test-concurrency=1`), pois integração e E2E compartilham o mesmo banco.
 
 ## Endpoints
 
