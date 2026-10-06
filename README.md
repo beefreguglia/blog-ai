@@ -11,6 +11,7 @@ API de blog em Node.js que gera rascunhos de posts com IA. A partir de uma ideia
 - [Scripts](#scripts)
 - [Testes](#testes)
 - [Endpoints](#endpoints)
+- [Documentação da API (Swagger)](#documentação-da-api-swagger)
 - [Modelo de dados](#modelo-de-dados)
 - [Build da imagem Docker](#build-da-imagem-docker)
 - [Publicação para produção](#publicação-para-produção)
@@ -36,11 +37,14 @@ src/
 ├── db/
 │   ├── pool.js             # pool de conexões do PostgreSQL
 │   └── migrations/         # migrations SQL (postgrator)
+├── docs/
+│   └── openapi.js          # especificação OpenAPI 3 da API
 ├── lib/
 │   ├── app.js              # roteador HTTP mínimo (params, query, body JSON, erros)
 │   └── api-key.js          # validação do header Authorization: Bearer <API_KEY>
 ├── routes/
-│   └── posts.js            # rotas de /posts
+│   ├── posts.js            # rotas de /posts
+│   └── docs.js             # /docs (Swagger UI) e /openapi.json
 └── services/               # regras de negócio e acesso ao banco
     ├── approve-post.js
     ├── create-post-draft.js
@@ -209,6 +213,23 @@ curl -X DELETE http://localhost:8080/posts/<id>/reject \
 | `400`  | Body com JSON inválido | `{ "message": "JSON inválido" }`            |
 | `404`  | Rota inexistente       | `{ "message": "Rota não encontrada" }`      |
 | `500`  | Erro não tratado       | `{ "message": "Erro interno do servidor" }` |
+
+## Documentação da API (Swagger)
+
+A API publica a própria documentação interativa:
+
+| Rota                | Descrição                                       |
+| ------------------- | ----------------------------------------------- |
+| `GET /docs`         | Swagger UI, para explorar e testar os endpoints |
+| `GET /openapi.json` | Especificação OpenAPI 3.0 em JSON               |
+
+Local: <http://localhost:8080/docs>.
+
+Para testar rotas protegidas no Swagger UI, clique em **Authorize** e informe o valor de `API_KEY` (o UI envia como `Authorization: Bearer <API_KEY>`).
+
+A especificação é escrita à mão em `src/docs/openapi.js`. **Ao criar ou alterar um endpoint, atualize esse arquivo**; os testes em `tests/unit/docs` garantem que todos os endpoints estão documentados, que os `$ref` resolvem e que as rotas protegidas declaram `403`.
+
+> O Swagger UI carrega seus arquivos (CSS e JS) de um CDN (jsDelivr), então o navegador precisa de acesso à internet. A rota `/openapi.json` não depende disso.
 
 ## Modelo de dados
 
